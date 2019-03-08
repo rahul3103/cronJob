@@ -20,7 +20,9 @@ const url =
 const insertIntoDB = async newLink => await Links.create(newLink);
 
 const scrapper = async () => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
   const page = await browser.newPage();
   await page.goto(url);
   const content = await page.content();
