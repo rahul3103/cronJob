@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const Links = require('./models/links');
 require('dotenv').config();
 
-const dbURI = require('./config/keys').mongoURI;
 const publishers = [
   'EVENINGSTANDARD',
   'DAILYMAIL',
