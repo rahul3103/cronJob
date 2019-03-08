@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
 const mongoose = require('mongoose');
 const Links = require('./models/links');
+require('dotenv').config();
 
 const dbURI = require('./config/keys').mongoURI;
 const publishers = [
@@ -62,11 +63,11 @@ const scrapper = async () => {
         .data('pub')}`
     );
   });
-
   await browser.close();
+  process.exit();
 };
 
 mongoose
-  .connect(dbURI, { useNewUrlParser: true })
+  .connect(process.env.DB_URI, { useNewUrlParser: true })
   .then(() => scrapper())
   .catch(err => console.log(err));
