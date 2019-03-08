@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const Links = require('./models/links');
 require('dotenv').config();
 
-const dbURI = require('./config/keys').mongoURI;
 const publishers = [
   'EVENINGSTANDARD',
   'DAILYMAIL',
@@ -18,7 +17,13 @@ const publishers = [
 const url =
   'https://www.newsnow.co.uk/h/Sport/Football/Premier+League/Tottenham+Hotspur';
 
-const insertIntoDB = async newLink => await Links.create(newLink);
+const insertIntoLink = async (_id, newLink) =>
+  await Links.findByIdAndUpdate(_id, newLink, {
+    upsert: true,
+    setDefaultsOnInsert: true
+  });
+
+const eveningStandard = () => {};
 
 const scrapper = async () => {
   const browser = await puppeteer.launch({
@@ -39,23 +44,23 @@ const scrapper = async () => {
     return publishers.includes(publisher);
   });
 
-  requiredDivs.each((i, elem) => {
+  requiredDivs.each(async (i, elem) => {
     const anchor = $(elem).find('a.hll');
     const href = anchor.attr('href');
     const _id = /A\/(.*?)\?/g.exec(href)[1];
+    const publisher = $(elem)
+      .find('span.src')
+      .data('pub');
 
-    insertIntoDB({
+    insertIntoLink(_id, {
       published_on: $(elem)
         .find('span.time')
         .data('time'),
       href,
       title: anchor.text(),
-      publisher: $(elem)
-        .find('span.src')
-        .data('pub'),
-      team_id: 1,
-      _id: /A\/(.*?)\?/g.exec(href)[1]
-    });
+      publisher,
+      team_id: 1
+    }).catch(e => console.error(e));
 
     console.info(
       `Inserting into DB: ${_id}. ${$(elem)
@@ -63,11 +68,13 @@ const scrapper = async () => {
         .data('pub')}`
     );
   });
+  // $('h1.headline').text().trim()
+  // $('div.body-content > p').map((i, elem) => $(elem).text()).get().join('</p><p>')
   await browser.close();
-  process.exit();
 };
 
 mongoose
   .connect(process.env.DB_URI, { useNewUrlParser: true })
   .then(() => scrapper())
+  .then(() => process.exit())
   .catch(err => console.log(err));

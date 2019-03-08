@@ -1,14 +1,18 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const linksSchema = new Schema({
+const articlesSchema = new Schema({
   href: { type: String, required: true },
   published_on: { type: Date, required: true },
   publisher: { type: String, required: true },
   team_id: { type: String, required: true },
   title: { type: String, required: true },
-  _id: { type: Number, required: true },
-  created_at: { type: Date, default: Date.now }
+  content: { type: String, required: true },
+  article_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Links',
+    required: true
+  }
 });
 
-module.exports = mongoose.model('Links', linksSchema);
+module.exports = mongoose.model('Articles', articlesSchema);
